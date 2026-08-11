@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>AI Camera Detection</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+    <div class="container">
+
+        <h1>🤖 AI Camera Detection</h1>
+
+        <p class="subtitle">
+            Real-Time Human & Animal Detection
+        </p>
+
+
+        <div id="statusBox"
+             class="status scanning">
+
+            🟢 SCANNING...
+
+        </div>
+
+
+        <div class="camera-box">
+
+            <img
+                src="{{ url_for('video') }}"
+                alt="Live Camera"
+            >
+
+        </div>
+
+
+        <div class="detection-card">
+
+            <h2 id="detectionTitle">
+                No Detection
+            </h2>
+
+
+            <p>
+                Object:
+                <strong id="objectName">
+                    -
+                </strong>
+            </p>
+
+
+            <p>
+                Confidence:
+                <strong id="confidence">
+                    0%
+                </strong>
+            </p>
+
+
+            <p id="alarmStatus">
+                🔇 Alarm OFF
+            </p>
+
+        </div>
+
+
+        <button
+            id="enableAlarm"
+            onclick="enableAlarm()">
+
+            🔊 Enable Alarm
+
+        </button>
+
+
+        <div class="info">
+
+            <div class="card">
+
+                <h2>👤 Human</h2>
+
+                <p>
+                    Detects humans
+                    in real time.
+                </p>
+
+            </div>
+
+
+            <div class="card">
+
+                <h2>🐾 Animal</h2>
+
+                <p>
+                    Detects supported
+                    animals.
+                </p>
+
+            </div>
+
+
+            <div class="card">
+
+                <h2>🔊 Alarm</h2>
+
+                <p>
+                    Plays alarm
+                    on detection.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- ALARM AUDIO -->
+    <!-- ============================= -->
+
+    <audio
+        id="alarmSound"
+        src="{{ url_for(
+            'static',
+            filename='alarm.wav'
+        ) }}"
+        preload="auto">
+    </audio>
+
+
+    <script>
+
+        let alarmEnabled = false;
+
+        let lastDetection = false;
+
+
+        // ==================================
+        // ENABLE ALARM
+        // ==================================
+
+        function enableAlarm() {
+
+            const audio =
+                document.getElementById(
+                    "alarmSound"
+                );
+
+
+            audio.volume = 1.0;
+
+
+            // Browser permission
+
+            audio.play()
+                .then(() => {
+
+                    audio.pause();
+
+                    audio.currentTime = 0;
+
+                    alarmEnabled = true;
+
+
+                    document.getElementById(
+                        "enableAlarm"
+                    ).innerText =
+                        "🔊 Alarm Enabled";
+
+
+                    document.getElementById(
+                        "alarmStatus"
+                    ).innerText =
+                        "🔊 Alarm READY";
+
+                })
+                .catch(error => {
+
+                    console.log(
+                        "Audio permission required",
+                        error
+                    );
+
+                });
+
+        }
+
+
+        // ==================================
+        // CHECK STATUS
+        // ==================================
+
+        async function checkStatus() {
+
+            try {
+
+                const response =
+                    await fetch("/status");
+
+
+                const data =
+                    await response.json();
+
+
+                const statusBox =
+                    document.getElementById(
+                        "statusBox"
+                    );
+
+
+                const title =
+                    document.getElementById(
+                        "detectionTitle"
+                    );
+
+
+                const object =
+                    document.getElementById(
+                        "objectName"
+                    );
+
+
+                const confidence =
+                    document.getElementById(
+                        "confidence"
+                    );
+
+
+                const alarmStatus =
+                    document.getElementById(
+                        "alarmStatus"
+                    );
+
+
+                // ==========================
+                // DETECTED
+                // ==========================
+
+                if (data.detected) {
+
+
+                    statusBox.innerText =
+                        "🚨 " +
+                        data.type +
+                        " DETECTED";
+
+
+                    statusBox.className =
+                        "status alert";
+
+
+                    title.innerText =
+                        "🚨 " +
+                        data.type +
+                        " DETECTED";
+
+
+                    object.innerText =
+                        data.object.toUpperCase();
+
+
+                    confidence.innerText =
+                        data.confidence +
+                        "%";
+
+
+                    // ======================
+                    // PLAY ALARM
+                    // ======================
+
+                    if (
+                        alarmEnabled &&
+                        !lastDetection
+                    ) {
+
+                        const audio =
+                            document.getElementById(
+                                "alarmSound"
+                            );
+
+
+                        audio.currentTime = 0;
+
+
+                        audio.play()
+                            .then(() => {
+
+                                alarmStatus.innerText =
+                                    "🔊 Alarm ON";
+
+                            })
+                            .catch(error => {
+
+                                console.log(
+                                    "Alarm blocked:",
+                                    error
+                                );
+
+                            });
+
+                    }
+
+
+                    lastDetection = true;
+
+
+                } else {
+
+
+                    statusBox.innerText =
+                        "🟢 SCANNING...";
+
+
+                    statusBox.className =
+                        "status scanning";
+
+
+                    title.innerText =
+                        "No Detection";
+
+
+                    object.innerText =
+                        "-";
+
+
+                    confidence.innerText =
+                        "0%";
+
+
+                    alarmStatus.innerText =
+                        "🔇 Alarm OFF";
+
+
+                    lastDetection = false;
+
+                }
+
+
+            } catch(error) {
+
+                console.log(
+                    "Status error:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        // Check every 500ms
+
+        setInterval(
+            checkStatus,
+            500
+        );
+
+    </script>
+
+</body>
+
+</html>
