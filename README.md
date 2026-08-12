@@ -1,6 +1,8 @@
-# 🤖 AI-Based Human & Animal Detection
+# 🤖 AI-Based Real-Time Human & Animal Detection
 
-A real-time camera detection system using **YOLOv8, OpenCV, Python, and Flask** to detect humans and animals through a live camera.
+A real-time AI camera detection system using **YOLOv8, OpenCV, Python, Flask, Docker, and GitHub Actions**.
+
+The system detects humans and animals from a live camera, provides alerts and alarms, saves detection images, and maintains detection logs.
 
 ## 🚀 Features
 
@@ -12,8 +14,10 @@ A real-time camera detection system using **YOLOv8, OpenCV, Python, and Flask** 
 - 🔊 Alarm notification
 - 📸 Detection image saving
 - 📝 CSV detection logs
-- 🗑️ Delete images older than 5 days
+- 🗑️ Automatic deletion of images older than 5 days
 - 🌐 Flask web dashboard
+- 🐳 Docker support
+- ⚙️ GitHub Actions CI/CD
 
 ## 🛠️ Technologies
 
@@ -22,80 +26,120 @@ A real-time camera detection system using **YOLOv8, OpenCV, Python, and Flask** 
 - OpenCV
 - Flask
 - HTML/CSS/JavaScript
-- Linux
+- Docker
 - Git & GitHub
+- GitHub Actions
+- Linux
 
-## 📁 Project Structure
+## 🏗️ Architecture
 
 ```text
-camera_detection/
-├── app.py
-├── detector.py
-├── requirements.txt
-├── .env.example
-├── .gitignore
-├── README.md
-├── templates/
-│   └── index.html
-├── static/
-│   ├── style.css
-│   └── alarm.wav
-├── detections/
-└── logs/
-⚙️ Setup
-Clone
-git clone YOUR_GITHUB_REPOSITORY_URL
-cd camera_detection
-Virtual Environment
+📷 Camera
+   ↓
+OpenCV
+   ↓
+YOLOv8
+   ↓
+👤 Human / 🐾 Animal
+   ↓
+Flask Application
+   ↓
+🚨 Alert + 🔊 Alarm
+   ↓
+📸 Images + 📝 Logs
+
+
+⚙️ Run Locally
+1. Clone
+git clone https://github.com/Divya12004/Camera-detection.git
+cd Camera-detection
+2. Create Virtual Environment
 python3 -m venv venv
 source venv/bin/activate
-Install Dependencies
+3. Install Dependencies
 pip install -r requirements.txt
-Configure Environment
+4. Configure Environment
 cp .env.example .env
-Run
+5. Run Application
 python app.py
 
 Open:
 
 http://localhost:5000
-🔍 Detection
-📷 Camera
-   ↓
-🤖 YOLOv8
-   ↓
-👤 Human / 🐾 Animal
-   ↓
-🚨 Alert + 🔊 Alarm
-   ↓
-📸 Image + 📝 Log
-📝 Logs
 
-Detection logs are stored in:
+🐳 Run with Docker
 
-logs/detections.csv
+Check camera:
+
+ls /dev/video*
+
+Build image:
+
+docker build -t camera-detection .
+
+Run container:
+
+docker run -d \
+  --name camera-detection \
+  --device=/dev/video0:/dev/video0 \
+  -p 5000:5000 \
+  camera-detection
+
+Check:
+
+docker ps
+
+View logs:
+
+docker logs camera-detection
+
+Open:
+
+http://localhost:5000
+
+🔄 CI/CD Pipeline
+
+GitHub Actions automatically runs when code is pushed to the main branch.
+
+Developer
+    ↓
+git push
+    ↓
+GitHub
+    ↓
+GitHub Actions
+    ↓
+Python Tests
+    ↓
+Syntax Check
+    ↓
+Docker Build
+    ↓
+✅ Pipeline Success
+
+Workflow file:
+
+.github/workflows/ci-cd.yml
+
+📸 Detection Images
 
 Images are stored in:
 
 detections/
 
+The application saves one image per detection event.
+
 Images older than 5 days are automatically deleted.
 
-🔐 Security
+📝 Detection Logs
 
-Do not upload:
+Logs are stored in:
 
-.env
-venv/
-detections/
-logs/
+logs/detections.csv
 
+Example:
 
-
-👩‍💻 Author
-
-Divya Sonawane
-
-B.Tech Computer Science & Engineering
-
+timestamp,type,object,confidence,image
+2026-08-12,HUMAN,person,98.5,detection.jpg
+2026-08-12,ANIMAL,dog,96.2,detection.jpg
 
